@@ -18,11 +18,11 @@ local eye_pos = newVector3({0,0,0})
 local eye_look_offset = newVector2({0,0})
 local last_player_rot = newVector2(player.getRot())
 
-function render()
-	timer = timer + 1
+function render(delta)
+	timer = timer + delta
 
 	if timer >= random_eye_look_time then
-		local random = math.floor(math.random() * 100)
+		local random = math.floor(math.random() * 50)
 		if random == 0 then
 			eye_look_offset.y = eye_movement_freedom.x * math.random() * 4
 		elseif random == 1 then
