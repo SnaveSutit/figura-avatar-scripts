@@ -1,71 +1,99 @@
-function clamp(v, min, max) return math.max(math.min(v, max), min) end
-function newVector3(a) return {['x'] = a[1], ['y'] = a[2], ['z'] = a[3]} end
-function newVector2(a) return {['x'] = a[1], ['y'] = a[2]} end
-function vec2Add(a, b) return newVector2({a.x + b.x, a.y + b.y}) end
-function vec2Sub(a, b) return newVector2({a.x - b.x, a.y - b.y}) end
+-- [ Script built for Figura v0.0.05a ] --
 
--- How far away from the center point your eyes can drift (Measured in pixels)
-local eye_movement_freedom = newVector2({0.8, 0.8})
--- How fast the eyes re-center. Smaller is faster. Should be less than 1 or you'll have issues.
-local eye_centering_friction = 0.8
--- Set this to your model's eye(s) bone. if you have more than 1 eye, you can join them under a single bone
+--!| Config |!--
+-- This should be your model's eye(s) bone. if you have more than 1 eye, you can join them under a single bone
 local eye_model = model.Player.Head.Hat.Eye
--- How often the eyes have a chance to look around randomly
-local random_eye_look_time = 60
+-- How fast the eye(s) will move towards their goal. (0 - 1) Default: 0.025
+local eye_glance_speed = 0.025
+-- The chance to glance when tryRandomGlance is ran. (0, 1) Default: 0.05
+local eye_glance_chance = 0.05
+-- How often to tryForGlance in ticks. Default: 40
+local eye_glance_cooldown = 40
+-- How much time to randomly add to the eye_glance_cooldown every time a successful glance is made.
+-- This allows for more varied glance holding times. (Should be > eye_glance_cooldown) Default: 10
+local eye_glance_cooldown_random_offset = 20
+-- The higher this number the more often the eye(s) will glance left and right rather than up/down/diagonally. Larger numbers favor the x axis (0 - 1) Default: 0.5
+local eye_glance_x_y_bias = 0.5
+-- How far in x and y the eye(s) can travel before being stopped. ({0 - 1, 0 - 1}) Default: {0.9, 0.9}
+local eye_freedom = vectors.of({0.9,0.9})
+-- How fast the eye(s) return to their center. Smaller values are faster. (0 - 1) Default: {0.7, 0.7}
+local eye_gravity = vectors.of({0.7,0.7})
+--!| End Config |!--
 
-local timer = 0
-local eye_pos = newVector3({0,0,0})
-local eye_look_offset = newVector2({0,0})
-local last_player_rot = newVector2(player.getRot())
+--| Math functions |--
+function clamp(v, min, max) return math.max(math.min(v, max), min) end
 
-function render(delta)
-	timer = timer + delta
+--| Var INIT |--
+local counter = 0
+local frame = 0
 
-	if timer >= random_eye_look_time then
-		local random = math.floor(math.random() * 50)
-		if random == 0 then
-			eye_look_offset.y = eye_movement_freedom.x * math.random() * 4
-		elseif random == 1 then
-			eye_look_offset.y = -eye_movement_freedom.x * math.random() * 4
-		elseif random == 2 then
-			eye_look_offset.x = eye_movement_freedom.y * math.random() * 4
-		elseif random == 3 then
-			eye_look_offset.x = -eye_movement_freedom.y * math.random() * 4
-		elseif random == 4 then
-			eye_look_offset.x = eye_movement_freedom.y * math.random() * 4
-			eye_look_offset.y = eye_movement_freedom.x * math.random() * 4
-		elseif random == 5 then
-			eye_look_offset.x = -eye_movement_freedom.y * math.random() * 4
-			eye_look_offset.y = -eye_movement_freedom.x * math.random() * 4
-		elseif random == 6 then
-			eye_look_offset.x = eye_movement_freedom.y * math.random() * 4
-			eye_look_offset.y = -eye_movement_freedom.x * math.random() * 4
-		elseif random == 7 then
-			eye_look_offset.x = -eye_movement_freedom.y * math.random() * 4
-			eye_look_offset.y = eye_movement_freedom.x * math.random() * 4
+local eye_pos = eye_model.getPos()
+local last_eye_pos = eye_pos
+local eye_glance_diff = vectors.of({0,0,0})
+local _eye_glance_cooldown = eye_glance_cooldown
+
+local player_rot = player.getRot()
+local last_player_rot = player_rot
+
+function randomizeGlanceCooldown()
+	_eye_glance_cooldown = eye_glance_cooldown + (eye_glance_cooldown_random_offset * (math.random() * 2 - 1))
+end
+
+function tryRandomGlance()
+	if math.random() < eye_glance_chance then
+		local random = math.random()
+		if (random < eye_glance_x_y_bias) then
+			eye_glance_diff = eye_freedom * vectors.of({math.random() * 2 - 1, math.random()}) / eye_glance_speed
+			randomizeGlanceCooldown()
 		else
-			eye_look_offset.y = 0
-			eye_look_offset.x = 0
+			eye_glance_diff = eye_freedom * vectors.of({math.random() * 2 - 1, math.random() * 2 - 1}) / eye_glance_speed
+			randomizeGlanceCooldown()
 		end
+	else
+		eye_glance_diff = vectors.of({0,0,0})
+		randomizeGlanceCooldown()
+	end
+end
 
-		timer = 0
+function tick()
+	counter = counter + 1
+
+	last_eye_pos = eye_pos
+	last_player_rot = player_rot
+	player_rot = player.getRot()
+
+	if math.floor(counter % _eye_glance_cooldown) == 0 then
+		tryRandomGlance()
 	end
 
-	eye_pos.x = eye_pos.x * eye_centering_friction
-	eye_pos.y = eye_pos.y * eye_centering_friction
+	local diff = (player_rot - last_player_rot)
+	diff = diff + eye_glance_diff
 
-	local player_rot = newVector2(player.getRot())
-	local diff = vec2Sub(player_rot, last_player_rot)
-	last_player_rot = player_rot
+	eye_pos = vectors.of({
+		clamp(eye_pos.x - (diff.y * eye_glance_speed), -eye_freedom.x, eye_freedom.x),
+		clamp(eye_pos.y + (diff.x * eye_glance_speed), -eye_freedom.y, eye_freedom.y)
+	})
 
-	diff = vec2Add(diff, eye_look_offset)
-
-	eye_pos.x = clamp(eye_pos.x - (diff.y / 20), -eye_movement_freedom.x, eye_movement_freedom.x)
-	eye_pos.y = clamp(eye_pos.y + (diff.x / 20), -eye_movement_freedom.y, eye_movement_freedom.y)
-
-	eye_model.setPos({
-		eye_pos.x,
-		eye_pos.y,
+	eye_pos = vectors.of({
+		eye_pos.x * eye_gravity.x,
+		eye_pos.y * eye_gravity.y,
 		eye_pos.z
 	})
 end
+
+function render(delta)
+	frame = counter + delta
+
+	local lerp_pos = vectors.lerp(last_eye_pos, eye_pos, delta)
+
+	eye_model.setPos(lerp_pos)
+end
+
+
+
+
+
+
+
+
+
