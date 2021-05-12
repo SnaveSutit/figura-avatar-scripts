@@ -83,7 +83,6 @@ function render(delta)
 	frame = counter + delta
 
 	local lerp_pos = vectors.lerp(last_eye_pos, eye_pos, delta)
-
 	eye_model.setPos(lerp_pos)
 end
 
