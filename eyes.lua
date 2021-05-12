@@ -44,15 +44,13 @@ function tryRandomGlance()
 		local random = math.random()
 		if (random < eye_glance_x_y_bias) then
 			eye_glance_diff = eye_freedom * vectors.of({math.random() * 2 - 1, math.random() * 0.5 - 0.25}) / eye_glance_speed
-			randomizeGlanceCooldown()
 		else
 			eye_glance_diff = eye_freedom * vectors.of({math.random() * 2 - 1, math.random() * 2 - 1}) / eye_glance_speed
-			randomizeGlanceCooldown()
 		end
 	else
 		eye_glance_diff = vectors.of({0,0,0})
-		randomizeGlanceCooldown()
 	end
+	randomizeGlanceCooldown()
 end
 
 function tick()
