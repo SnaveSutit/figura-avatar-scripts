@@ -1,6 +1,6 @@
 -- [ Script built for Figura v0.0.05a ] --
 
---!| Config |!--
+--!| Eye Config |!--
 -- This should be your model's eye(s) bone. if you have more than 1 eye, you can join them under a single bone
 local eye_model = model.Player.Head.Hat.Eye
 -- How fast the eye(s) will move towards their goal. (0 - 1) Default: 0.025
@@ -18,7 +18,7 @@ local eye_glance_x_y_bias = 0.5
 local eye_freedom = vectors.of({0.9,0.9})
 -- How fast the eye(s) return to their center. Smaller values are faster. (0 - 1) Default: {0.7, 0.7}
 local eye_gravity = vectors.of({0.7,0.7})
---!| End Config |!--
+--!| End Eye Config |!--
 
 --| Math functions |--
 function clamp(v, min, max) return math.max(math.min(v, max), min) end
