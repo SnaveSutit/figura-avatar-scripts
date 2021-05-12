@@ -11,7 +11,7 @@ local eye_glance_chance = 0.05
 local eye_glance_cooldown = 40
 -- How much time to randomly add to the eye_glance_cooldown every time a successful glance is made.
 -- This allows for more varied glance holding times. (Should be > eye_glance_cooldown) Default: 10
-local eye_glance_cooldown_random_offset = 20
+local eye_glance_cooldown_random_offset = 10
 -- The higher this number the more often the eye(s) will glance left and right rather than up/down/diagonally. Larger numbers favor the x axis (0 - 1) Default: 0.5
 local eye_glance_x_y_bias = 0.5
 -- How far in x and y the eye(s) can travel before being stopped. ({0 - 1, 0 - 1}) Default: {0.9, 0.9}
