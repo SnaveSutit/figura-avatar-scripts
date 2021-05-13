@@ -23,9 +23,26 @@ walk_animation_container.legs.right_leg = {}
 walk_animation_container.legs.right_leg.pos = vectors.of({0,0,0})
 walk_animation_container.legs.right_leg.last_pos = vectors.of({0,0,0})
 
+walk_animation_container.arms = {}
+
+walk_animation_container.arms.left_arm = {}
+walk_animation_container.arms.left_arm.pos = vectors.of({0,0,0})
+walk_animation_container.arms.left_arm.last_pos = vectors.of({0,0,0})
+
+walk_animation_container.arms.right_arm = {}
+walk_animation_container.arms.right_arm.pos = vectors.of({0,0,0})
+walk_animation_container.arms.right_arm.last_pos = vectors.of({0,0,0})
+
 
 --!| Walk Animation Config |!--
-walk_animation_container.vars.walk_animation_speed = 0.9
+walk_animation_container.vars.leg_move_speed = 0.9
+walk_animation_container.vars.leg_freedom = vectors.of({-2, 1})
+walk_animation_container.vars.leg_freedom_mul = 3
+walk_animation_container.vars.leg_freedom_sub = 1
+walk_animation_container.vars.leg_velocity_mul = 20
+
+walk_animation_container.vars.arm_move_speed = 0.9
+walk_animation_container.vars.arm_velocity_mul = 10
 
 walk_animation_container.legs.left_leg.bones = {
 	model.Player.Legs.LeftLeg,
@@ -37,12 +54,25 @@ walk_animation_container.legs.right_leg.bones = {
 	model.Player.Feet.RightFoot
 }
 
+walk_animation_container.arms.left_arm.bones = {
+	model.Player.Arms.LeftArm
+}
+
+walk_animation_container.arms.right_arm.bones = {
+	model.Player.Arms.RightArm
+}
+
+
 --!| End Walk Animation Config |!--
 
 function walkAnimation()
 
 	for k,_ in pairs(walk_animation_container.legs) do
 		walk_animation_container.legs[k].last_pos = walk_animation_container.legs[k].pos
+	end
+
+	for k,_ in pairs(walk_animation_container.arms) do
+		walk_animation_container.arms[k].last_pos = walk_animation_container.arms[k].pos
 	end
 
 	if (not (walk_animation_container.vars.player_velocity.x == 0)) and (not (walk_animation_container.vars.player_velocity.z == 0)) then
@@ -54,19 +84,34 @@ function walkAnimation()
 
 		walk_animation_container.legs.left_leg.pos = vectors.of({
 			0,
-			clamp(math.sin(walk_animation_container.vars.counter * walk_animation_container.vars.walk_animation_speed) * 3 - 1, -2, 1),
-			-math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.walk_animation_speed) * (20 * mul),
+			clamp(math.sin(walk_animation_container.vars.counter * walk_animation_container.vars.leg_move_speed) * walk_animation_container.vars.leg_freedom_mul - walk_animation_container.vars.leg_freedom_sub, walk_animation_container.vars.leg_freedom.x, walk_animation_container.vars.leg_freedom.y),
+			-math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.leg_move_speed) * (walk_animation_container.vars.leg_velocity_mul * mul),
 		})
 
 		walk_animation_container.legs.right_leg.pos = vectors.of({
 			0,
-			clamp(-math.sin(walk_animation_container.vars.counter * walk_animation_container.vars.walk_animation_speed) * 3 - 2, -2, 0),
-			math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.walk_animation_speed) * (20 * mul)
+			clamp(-math.sin(walk_animation_container.vars.counter * walk_animation_container.vars.leg_move_speed) * walk_animation_container.vars.leg_freedom_mul - walk_animation_container.vars.leg_freedom_sub, walk_animation_container.vars.leg_freedom.x, walk_animation_container.vars.leg_freedom.y),
+			math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.leg_move_speed) * (walk_animation_container.vars.leg_velocity_mul * mul)
+		})
+
+		walk_animation_container.arms.left_arm.pos = vectors.of({
+			0,
+			0,
+			math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.arm_move_speed) * (walk_animation_container.vars.arm_velocity_mul * mul)
+		})
+
+		walk_animation_container.arms.right_arm.pos = vectors.of({
+			0,
+			0,
+			-math.cos(walk_animation_container.vars.counter * walk_animation_container.vars.arm_move_speed) * (walk_animation_container.vars.arm_velocity_mul * mul)
 		})
 
 	else
 		for k,_ in pairs(walk_animation_container.legs) do
 			walk_animation_container.legs[k].pos = vectors.of({0,0,0})
+		end
+		for k,_ in pairs(walk_animation_container.arms) do
+			walk_animation_container.arms[k].pos = vectors.of({0,0,0})
 		end
 	end
 end
@@ -83,7 +128,6 @@ function tick()
 end
 
 function render(delta)
-
 	for k, v in pairs(walk_animation_container.legs) do
 		local lerp_pos = vectors.lerp(
 			walk_animation_container.legs[k].last_pos,
@@ -91,6 +135,17 @@ function render(delta)
 			delta
 		)
 		for _,bone in ipairs(walk_animation_container.legs[k].bones) do
+			bone.setPos(lerp_pos)
+		end
+	end
+
+	for k, v in pairs(walk_animation_container.arms) do
+		local lerp_pos = vectors.lerp(
+			walk_animation_container.arms[k].last_pos,
+			walk_animation_container.arms[k].pos,
+			delta
+		)
+		for _,bone in ipairs(walk_animation_container.arms[k].bones) do
 			bone.setPos(lerp_pos)
 		end
 	end
