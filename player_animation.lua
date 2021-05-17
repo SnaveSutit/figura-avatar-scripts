@@ -1,4 +1,13 @@
 
+math.clamp = function(v, min, max) return math.max(math.min(v, max), min) end
+
+local util = {}
+util.forEachPair = function(t, func)
+	for k,v in pairs(t) do
+		func(k,v)
+	end
+end
+
 local walk_anim = {
 	vars = {},
 	bones = {},
@@ -31,7 +40,7 @@ walk_anim.bones = {
 walk_anim.bones.head.skull = {
 	parent = vanilla_model.HEAD,
 	models = {
-		models.head
+		model.HEAD
 	},
 	equations = {
 		rot = function(rot) return rot end,
@@ -46,7 +55,7 @@ walk_anim.bones.head.skull = {
 walk_anim.bones.body.torso = {
 	parent = vanilla_model.TORSO,
 	models = {
-		models.body
+		model.TORSO
 	},
 	equations = {
 		rot = function(rot) return rot end,
@@ -61,7 +70,7 @@ walk_anim.bones.body.torso = {
 walk_anim.bones.arms.left = {
 	parent = vanilla_model.LEFT_ARM,
 	models = {
-		models.leftArm
+		model.LEFT_ARM
 	},
 	equations = {
 		rot = function(rot) return rot end,
@@ -76,7 +85,7 @@ walk_anim.bones.arms.left = {
 walk_anim.bones.arms.right = {
 	parent = vanilla_model.RIGHT_ARM,
 	models = {
-		models.rightArm
+		model.RIGHT_ARM
 	},
 	equations = {
 		rot = function(rot) return rot end,
@@ -91,7 +100,7 @@ walk_anim.bones.arms.right = {
 walk_anim.bones.lowerarms.left = {
 	parent = vanilla_model.LEFT_ARM,
 	models = {
-		models.lowerLeftArm
+		model.LEFT_ARM.LOWER_LEFT_ARM
 	},
 	equations = {
 		rot = function(rot) return vectors.of({
@@ -110,7 +119,7 @@ walk_anim.bones.lowerarms.left = {
 walk_anim.bones.lowerarms.right = {
 	parent = vanilla_model.RIGHT_ARM,
 	models = {
-		models.lowerRightArm
+		model.RIGHT_ARM.LOWER_RIGHT_ARM
 	},
 	equations = {
 		rot = function(rot) return vectors.of({
@@ -129,7 +138,7 @@ walk_anim.bones.lowerarms.right = {
 walk_anim.bones.legs.left = {
 	parent = vanilla_model.LEFT_LEG,
 	models = {
-		models.leftLeg
+		model.LEFT_LEG
 	},
 	equations = {
 		rot = function(rot) return rot * vectors.of({0.75,0.75,0.75}) end,
@@ -144,7 +153,7 @@ walk_anim.bones.legs.left = {
 walk_anim.bones.legs.right = {
 	parent = vanilla_model.RIGHT_LEG,
 	models = {
-		models.rightLeg
+		model.RIGHT_LEG
 	},
 	equations = {
 		rot = function(rot) return rot * vectors.of({0.75,0.75,0.75}) end,
@@ -159,7 +168,7 @@ walk_anim.bones.legs.right = {
 walk_anim.bones.shins.right = {
 	parent = vanilla_model.RIGHT_LEG,
 	models = {
-		model = models.rightShin
+		model.RIGHT_LEG.RIGHT_SHIN
 	},
 	equations = {
 		rot = function(rot) return vectors.of({
@@ -175,52 +184,10 @@ walk_anim.bones.shins.right = {
 	last_rot = vectors.of({0,0,0}),
 }
 
-walk_anim.bones.handitems.right = {
-	parent = models.lowerRightArm,
-	models = {
-		model = held_item_model.RIGHT_HAND
-	},
-	equations = {
-		rot = function(rot)
-			return vectors.of({
-			-rot.x,
-			-rot.y,
-			-rot.z,
-		})
-		end,
-		pos = function(pos) return vectors.of({0,0,0}) end
-	},
-	pos = vectors.of({0,0,0}),
-	last_pos = vectors.of({0,0,0}),
-	rot = vectors.of({0,0,0}),
-	last_rot = vectors.of({0,0,0}),
-}
-
-walk_anim.bones.handitems.left = {
-	parent = models.lowerLeftArm,
-	models = {
-		model = held_item_model.LEFT_HAND
-	},
-	equations = {
-		rot = function(rot)
-			return vectors.of({
-			-rot.x,
-			-rot.y,
-			rot.z,
-		})
-		end,
-		pos = function(pos) return vectors.of({0,0,0}) end
-	},
-	pos = vectors.of({0,0,0}),
-	last_pos = vectors.of({0,0,0}),
-	rot = vectors.of({0,0,0}),
-	last_rot = vectors.of({0,0,0}),
-}
-
 walk_anim.bones.shins.left = {
 	parent = vanilla_model.LEFT_LEG,
 	models = {
-		model = models.leftShin
+		model.LEFT_LEG.LEFT_SHIN
 	},
 	equations = {
 		rot = function(rot) return vectors.of({
